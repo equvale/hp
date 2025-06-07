@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Особенный День</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Asap&display=swap" rel="stylesheet">
+
+  <style>
+    /* Контейнер для 3D-сердец */
+    #hearts-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    main {
+      position: relative;
+      z-index: 2; /* Поверх 3D */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Контейнер для 3D-сердец -->
+  <div id="hearts-container"></div>
+
+  <main>
+    <section>
+      <div>
+        <h1>Для тебя</h1>
+        <canvas id="canvas" data-engine="three.js r154" width="750" height="912" style="width: 600px; height: 730px; touch-action: none;"></canvas>
+        <h2>С днем рожденья!</h2>
+        <p id="arrow">»</p>
+      </div>
+    </section>
+
+    <section>
+      <div>
+        <div class="love-blur">
+          С каждым днем ты становишься все дороже для меня<br> Пусть эта страничка принесет тебе улыбку!
+          <br><br>
+          <a href="carta.pdf" download="">
+            <button id="downloadBtn">Скачать письмо 💌</button>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Импорт map для three.js -->
+  <script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js" crossorigin="anonymous"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+        "GLTFLoader": "https://unpkg.com/three@0.154.0/examples/jsm/loaders/GLTFLoader.js"
+      }
+    }
+  </script>
+
+  <!-- Основной скрипт с сердцами -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'GLTFLoader';
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 6;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById("hearts-container").appendChild(renderer.domElement);
+
+    const light = new THREE.AmbientLight(0xffffff, 1.5);
+    scene.add(light);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 10, 10);
+    scene.add(directionalLight);
+
+    const loader = new GLTFLoader();
+    const hearts = [];
+
+    loader.load('models/heart.glb', function (gltf) {
+      for (let i = 0; i < 50; i++) {
+        const heart = gltf.scene.clone();
+        heart.position.set(
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 10
+        );
+        heart.rotation.set(
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          Math.random() * Math.PI
+        );
+        const scale = 0.1 + Math.random() * 0.2;
+        heart.scale.set(scale, scale, scale);
+        scene.add(heart);
+        hearts.push(heart);
+      }
+
+      animate();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      hearts.forEach((heart) => {
+        heart.rotation.y += 0.01;
+        heart.position.y += 0.005;
+        if (heart.position.y > 6) heart.position.y = -6;
+      });
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+
+</body>
+</html>
